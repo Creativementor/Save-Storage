@@ -1,9 +1,16 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
 import {
+    getFirestore,
+    collection,
+    addDoc
+} from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+import {
     getStorage,
     ref,
-    uploadBytes
+    uploadBytes,
+    getDownloadURL
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-storage.js";
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -19,20 +26,42 @@ const firebaseConfig = {
     measurementId: "G-6L54FQZ6TQ"
 };
 
+const image = document.getElementById("image")
+const save_file = document.getElementById("save_file")
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-const storage = getStorage(app, "gs://my-custom-bucket");
+const storage = getStorage(app);
 
-const imagesStorageRef = ref(storage, "images");
+const db = getFirestore(app);
 
-const images = document.getElementById("images")
-const save_file = document.getElementById("save_file")
+const imagesCollection = collection(db, "images")
+
+
 
 save_file.addEventListener("click", () => {
-    console.log(images.files[0]);
+    console.log(image.files[0]);
 
-    uploadBytes(imagesStorageRef, images.files[0]).then((snapshot) => {
-        console.log('Uploaded a blob or file!');
-      });
-})
+    const imagesStorageRef = ref(storage, image.files[0].name)
+
+    uploadBytes(imagesStorageRef, image.files[0])
+        .then((snapshot) => {
+            console.log('Uploaded an array!');
+
+            getDownloadURL(imagesStorageRef)
+                .then((url) => {
+                    //add url + category to the db
+
+                    console.log("url =>", url);
+
+                    addDoc(imagesCollection, { url, category: "image" }).then(() => {
+
+                        console.log("Document updated to the DB");
+
+                    })
+                })
+                .catch((err) => console.log("Error in Download", err))
+        })
+        .catch((err) => console.log(err))
+});
