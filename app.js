@@ -24,12 +24,14 @@ const firebaseConfig = {
     messagingSenderId: "912814913266",
     appId: "1:912814913266:web:99d6e1ccc47d3140af026b",
     measurementId: "G-6L54FQZ6TQ"
-  };
+};
+
 
 const image = document.getElementById("image")
 const save_file = document.getElementById("save_file")
 
 // Initialize Firebase
+
 const app = initializeApp(firebaseConfig);
 
 const storage = getStorage(app);
@@ -51,17 +53,15 @@ save_file.addEventListener("click", () => {
 
             getDownloadURL(imagesStorageRef)
                 .then((url) => {
-                    //add url + category to the db
+
+                    // add url + category to the db
 
                     console.log("url =>", url);
 
-                    addDoc(imagesCollection, { url, category: "image" }).then(() => {
-
-                        console.log("Document updated to the DB");
-
+                    addDoc(imagesCollection, { url, category: "images" }).then(() => {
+                        console.log("Docment updated to the DB");
                     })
                 })
-                .catch((err) => console.log("Error in Download", err))
-            })
-            .catch((err) => console.log(err))
+        })
+        .catch((err) => console.log(err))
 });
