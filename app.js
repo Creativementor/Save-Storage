@@ -2,7 +2,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/fireba
 import {
     getFirestore,
     collection,
-    addDoc
+    addDoc,
+    getDocs
 } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 import {
     getStorage,
@@ -17,18 +18,20 @@ import {
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-    apiKey: "AIzaSyAwUdaLy1KCEjKgORPopZekP6O5RAUA0kM",
-    authDomain: "storage-save-64f8f.firebaseapp.com",
-    projectId: "storage-save-64f8f",
-    storageBucket: "storage-save-64f8f.appspot.com",
-    messagingSenderId: "912814913266",
-    appId: "1:912814913266:web:99d6e1ccc47d3140af026b",
-    measurementId: "G-6L54FQZ6TQ"
+    apiKey: "AIzaSyAiX7dwNLVt6k3GyizXCGqd_CB-5MagC-w",
+    authDomain: "save-data-fcdc1.firebaseapp.com",
+    projectId: "save-data-fcdc1",
+    storageBucket: "save-data-fcdc1.appspot.com",
+    messagingSenderId: "644889784637",
+    appId: "1:644889784637:web:aba69675e5ee43c5325554",
+    measurementId: "G-BZB3FZG8BJ"
 };
 
 
-const image = document.getElementById("image")
-const save_file = document.getElementById("save_file")
+
+const image = document.getElementById("image");
+const save_file = document.getElementById("save_file");
+const container = document.getElementById("container");
 
 // Initialize Firebase
 
@@ -40,12 +43,14 @@ const db = getFirestore(app);
 
 const imagesCollection = collection(db, "images")
 
-
+getImagesFromDB();
 
 save_file.addEventListener("click", () => {
     console.log(image.files[0]);
 
     const imagesStorageRef = ref(storage, image.files[0].name)
+
+    save_file.disabled = true;
 
     uploadBytes(imagesStorageRef, image.files[0])
         .then((snapshot) => {
@@ -60,8 +65,33 @@ save_file.addEventListener("click", () => {
 
                     addDoc(imagesCollection, { url, category: "images" }).then(() => {
                         console.log("Docment updated to the DB");
-                    })
+                        getImagesFromDB();
+                        save_file.disabled = false;
+                    });
+                })
+                .catch((err) => {
+                    console.log("Error in download", err), (save_file.disabled = false);
                 })
         })
-        .catch((err) => console.log(err))
+        .catch((err) => {
+            console.log(err), (save_file.disabled = false);
+        })
 });
+
+async function getImagesFromDB() {
+    const querySnapshot = await getDocs(imagesCollection);
+    container.innerHTML = ""
+    querySnapshot.forEach((doc) => {
+        console.log(`${doc.id} =>`);
+        
+        console.log(doc.data());
+
+        const img = `  <img id="${doc.id}"
+         src="${doc.data().url}"
+        style="height: 300px; width: 300px; border-radius: 12px; margin: 30px;" 
+         
+         />`
+
+         container.innerHTML += img;
+    });
+}
